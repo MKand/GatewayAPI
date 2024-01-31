@@ -14,7 +14,7 @@
 
 timeout: 7200s # 2hr
 tags:
-  - infra-features-gke-gateways
+  - infra-features-gke-gateway-deploy
 substitutions:
   _PROJECT_ID: ${PROJECT_ID}
 steps:
@@ -33,7 +33,7 @@ steps:
         --member "serviceAccount:${_PROJECT_ID}.svc.id.goog[config-management-system/root-reconciler]" \
         configsync-sa@${_PROJECT_ID}.iam.gserviceaccount.com
 - name: "gcr.io/cloud-builders/gcloud"
-  id: "infra-features-gke-gateways-deploy"
+  id: "infra-push-acm-config
   dir: "infra/acm"
   entrypoint: bash
   args:

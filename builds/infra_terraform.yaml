@@ -15,9 +15,9 @@
 timeout: 14400s # 2hr
 substitutions:
   _PROJECT_ID: ${PROJECT_ID}
-  _DEBUG_SKIP_INFRA: "false" # used to skip infra portions while testing asm and gateway deployments only
+  _DEBUG_SKIP_INFRA: "true" # used to skip infra portions while testing asm and gateway deployments only
   _VPC: "true"
-  _GKE: "false"
+  _GKE: "true"
 tags:
   - infra-main-terraform
 steps:
@@ -72,3 +72,39 @@ steps:
         [[ "${_DEBUG_SKIP_INFRA}" == "true" ]] && exit 0
         [[ "${_GKE}" == "false" ]] && exit 0
         exec gcloud builds submit --config builds/terraform/infra-create-gke.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+  # Deploy Gateway on GKE
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "infra-features-gke-gateway-deploy"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        exec gcloud builds submit --config builds/infra-features-gke-gateway-deploy.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+
+  # Confirm ACM sync on clusters
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "infra-features-gke-gateway-confirm"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        exec gcloud builds submit --config builds/infra-features-gke-gateway-confirm.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+  
+  # Get Gateway IP address
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "infra-gateway-ipaddress"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        exec gcloud builds submit --config builds/infra-gateway-ipaddress.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+ 
+  # Give the MCI service account the necessary roles
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "infra-sa-gke-roles"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        exec gcloud builds submit --config builds/infra-sa-gke-mci-roles.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+  
