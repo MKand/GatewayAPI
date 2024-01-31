@@ -1,0 +1,74 @@
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+timeout: 14400s # 2hr
+substitutions:
+  _PROJECT_ID: ${PROJECT_ID}
+  _DEBUG_SKIP_INFRA: "false" # used to skip infra portions while testing asm and gateway deployments only
+  _VPC: "true"
+  _GKE: "false"
+tags:
+  - infra-main-terraform
+steps:
+  # Build GCS storage bucket for TF state, project files, vars.sh etc
+  # This step creates a GCS storage bucket in the project with the name of project ID.
+  # This step creates the following resources:
+  # GCS storage bucket (with versioning enabled) named PROJECT_ID.
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "infra-create-gcs"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        exec gcloud builds submit --config builds/terraform/infra-create-gcs.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+  # Enable APIs
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "infra-enable-apis"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        [[ "${_DEBUG_SKIP_INFRA}" == "true" ]] && exit 0
+        exec gcloud builds submit --config builds/terraform/infra-enable-apis.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+ # Create CloudSource repos, artifact registries and triggers
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "infra-create-repos"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        [[ "${_DEBUG_SKIP_INFRA}" == "true" ]] && exit 0
+        exec gcloud builds submit --config builds/terraform/infra-create-repos.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+  
+  # Create VPC
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "infra-create-vpc"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        [[ "${_DEBUG_SKIP_INFRA}" == "true" ]] && exit 0
+        [[ "${_VPC}" == "false" ]] && exit 0
+        exec gcloud builds submit --config builds/terraform/infra-create-vpc.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+ 
+ # Create GKE clusters
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "infra-create-gke"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        [[ "${_DEBUG_SKIP_INFRA}" == "true" ]] && exit 0
+        [[ "${_GKE}" == "false" ]] && exit 0
+        exec gcloud builds submit --config builds/terraform/infra-create-gke.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}

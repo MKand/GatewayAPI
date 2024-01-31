@@ -1,9 +1,16 @@
+# All files that start with . with the exception of .gitignore
+.* 
+!.gitignore
+
 # Local .terraform directories
 **/.terraform/*
 
 # .tfstate files
 *.tfstate
 *.tfstate.*
+
+# plan files 
+*tfplan
 
 # Crash log files
 crash.log

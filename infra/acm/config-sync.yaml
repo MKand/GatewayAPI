@@ -1,0 +1,43 @@
+kind: Cluster
+apiVersion: clusterregistry.k8s.io/v1alpha1
+metadata:
+  name: europe-west3-0
+  labels:
+    region: europe-west3
+    config: "false"
+
+---
+kind: Cluster
+apiVersion: clusterregistry.k8s.io/v1alpha1
+metadata:
+  name: europe-west4-0
+  labels:
+    region: europe-west4
+    config: "false"
+---
+kind: Cluster
+apiVersion: clusterregistry.k8s.io/v1alpha1
+metadata:
+  name: config-europe-west4
+  labels:
+    region: europe-west4
+    config: "true"
+--- 
+kind: ClusterSelector
+apiVersion: configmanagement.gke.io/v1
+metadata:
+  name: selector-workload
+spec:
+  selector:
+    matchLabels:
+      config: "false"
+--- 
+kind: ClusterSelector
+apiVersion: configmanagement.gke.io/v1
+metadata:
+  name: selector-config
+spec:
+  selector:
+    matchLabels:
+      config: "true"
+
