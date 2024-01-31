@@ -33,7 +33,7 @@ steps:
         --member "serviceAccount:${_PROJECT_ID}.svc.id.goog[config-management-system/root-reconciler]" \
         configsync-sa@${_PROJECT_ID}.iam.gserviceaccount.com
 - name: "gcr.io/cloud-builders/gcloud"
-  id: "infra-push-acm-config
+  id: "infra-push-acm-config"
   dir: "infra/acm"
   entrypoint: bash
   args:
