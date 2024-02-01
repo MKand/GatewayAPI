@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Prod clusters
-export GKE_PROD1_REGION_=europe-west3
+export GKE_PROD1_REGION=europe-west3
 export GKE_PROD2_REGION=europe-west4
 export GKE_PROD1_NAME=europe-west3-0
 export GKE_PROD2_NAME=europe-west4-0

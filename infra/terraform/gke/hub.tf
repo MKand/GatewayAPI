@@ -15,7 +15,6 @@ locals{
   }]
  
  all-clusters = concat(local.fleet-clusters, local.config-clusters)
-
 }
 
 module "fleet-hub" {

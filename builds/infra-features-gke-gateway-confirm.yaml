@@ -43,6 +43,7 @@ steps:
       export PROD1_NOMOS_STATUS=0
       until [[ $$PROD1_NOMOS_STATUS == "SYNCED" ]]
       do
+        echo -e "Checking nomos status for gke_${_PROJECT_ID}_$${GKE_PROD1_REGION}_$${GKE_PROD1_NAME}"
         export PROD1_NOMOS_STATUS=$(./nomos status --contexts gke_${_PROJECT_ID}_$${GKE_PROD1_REGION}_$${GKE_PROD1_NAME} | sed -n 6p | awk '{print $1;}')
         echo -e "PROD1_NOMOS_STATUS is $$PROD1_NOMOS_STATUS"
         sleep 5
@@ -50,11 +51,15 @@ steps:
       export PROD2_NOMOS_STATUS=0
       until [[ $$PROD2_NOMOS_STATUS == "SYNCED" ]]
       do
+        echo -e "Checking nomos status for gke_${_PROJECT_ID}_$${GKE_PROD2_REGION}_$${GKE_PROD2_NAME}"
         export PROD2_NOMOS_STATUS=$(./nomos status --contexts gke_${_PROJECT_ID}_$${GKE_PROD2_REGION}_$${GKE_PROD2_NAME} | sed -n 6p | awk '{print $1;}')
         echo -e "PROD2_NOMOS_STATUS is $$PROD2_NOMOS_STATUS"
         sleep 5
       done
+      export CONFIG_NOMOS_STATUS=0
+      until [[ $$CONFIG_NOMOS_STATUS == "SYNCED" ]]
       do
+        echo -e "Checking nomos status for gke_${_PROJECT_ID}_$${GKE_CONFIG_REGION}_$${GKE_CONFIG_NAME}"
         export CONFIG_NOMOS_STATUS=$(./nomos status --contexts gke_${_PROJECT_ID}_$${GKE_CONFIG_REGION}_$${GKE_CONFIG_NAME} | sed -n 6p | awk '{print $1;}')
         echo -e "CONFIG_NOMOS_STATUS is $$CONFIG_NOMOS_STATUS"
         sleep 5
