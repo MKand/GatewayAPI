@@ -87,6 +87,12 @@ cd ../team-a/infra-repo/terraform
 terraform init -backend-config="bucket=${PROJECT_ID}"
 terraform plan -out=tfplan
 ```
+Verify the infrastructure is according to plan. If so, proceed to the next step.
+
+```sh
+terraform apply tfplan
+```
+
 Team A's application is a web-application that renders a simple webpage.
 The source code of the application is under *app/webpage* in this repo. The container image of this application can be built and pushed by running the command *./buildapp.sh* from the root of this repo. The image will be built and stored in Artifact registry under the name **europe-west4-docker.pkg.dev/<project-id>/demos/app:latest**
 
@@ -144,7 +150,11 @@ cd team-b/infra-repo/terraform
 terraform init -backend-config="bucket=${PROJECT_ID}"
 terraform plan -out=tfplan
 ```
+Verify the infrastructure is according to plan. If so, proceed to the next step.
 
+```sh
+terraform apply tfplan
+```
 It is now time to deploy the application.
 ```sh
 cd ../../app-repo
