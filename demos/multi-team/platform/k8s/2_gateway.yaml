@@ -4,7 +4,7 @@ metadata:
   name: external-http-single-cluster
   namespace: single-cluster-gateway
 spec:
-  gatewayClassName: gke-l7-regional-external-managed
+  gatewayClassName: gke-l7-global-external-managed
   listeners:
   - name: http
     protocol: HTTP
@@ -15,3 +15,6 @@ spec:
         selector:
           matchLabels:
             single-cluster-gateway: "true"
+  addresses:
+  - type: NamedAddress
+    value: single-cluster-gateway-address

@@ -63,7 +63,6 @@ locals {
 
 module "vpc" {
   source       = "terraform-google-modules/network/google"
-#   version =
   project_id   = var.project_id
   network_name = var.network_name
   routing_mode = "GLOBAL"
