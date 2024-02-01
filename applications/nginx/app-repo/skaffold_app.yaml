@@ -2,12 +2,10 @@ apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
   name: nginx
+manifests:
+ rawYaml:
+ - ./k8s/*
 deploy:
-  kubectl:
-    manifests:
-      - ./k8s/deployment.yaml
-      - ./k8s/httproute.yaml
-      - ./k8s/namespace.yaml
-      - ./k8s/service.yaml
+  kubectl: {}
   statusCheck: true
   statusCheckDeadlineSeconds: 2400 # High timeout required with autopilot as scaling can be slow

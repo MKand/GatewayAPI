@@ -1,9 +1,15 @@
 locals {
   targets = jsondecode(data.google_storage_bucket_object_content.clusters_info.content)
+  config = jsondecode(data.google_storage_bucket_object_content.config_cluster_info.content)[0]
 }
 
 data "google_storage_bucket_object_content" "clusters_info" {
   name   = "platform-values/clusters.json"
+  bucket = var.project_id
+}
+
+data "google_storage_bucket_object_content" "config_cluster_info" {
+  name   = "platform-values/config_cluster.json"
   bucket = var.project_id
 }
 
@@ -41,6 +47,21 @@ resource "google_clouddeploy_target" "child_target_apps" {
   require_approval = false
 }
 
+resource "google_clouddeploy_target" "config_target" {
+  location = var.pipeline_location
+  name     = "config-target-${var.service_name}"
+  execution_configs {
+    usages            = ["RENDER", "DEPLOY"]
+    service_account = google_service_account.clouddeploy.email
+  }
+  gke {
+    cluster = local.config.id
+  }
+
+  project          = var.project_id
+  require_approval = false
+}
+
 resource "google_clouddeploy_target" "multi_target_apps" {
   location = var.pipeline_location
   name     = "multi-target-${var.service_name}"
@@ -65,6 +86,24 @@ resource "google_clouddeploy_delivery_pipeline" "primary" {
     stages {
         profiles  = []
         target_id = google_clouddeploy_target.multi_target_apps.target_id
+    }
+  }
+  provider = google-beta
+}
+
+
+resource "google_clouddeploy_delivery_pipeline" "config" {
+  location = var.pipeline_location
+  name     = lower("config-${var.service_name}-pipeline")
+
+  description = "Service delivery pipeline for the config service ${var.service_name} for app clusters."
+  project     = var.project_id
+
+  serial_pipeline {
+
+    stages {
+        profiles  = []
+        target_id = google_clouddeploy_target.config_target.target_id
     }
   }
   provider = google-beta
