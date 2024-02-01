@@ -4,7 +4,8 @@ metadata:
   name: nginx
 manifests:
  rawYaml:
- - ./k8s/*
+ - ./k8s/1_namespace.yaml
+ - ./k8s/4_httproute.yaml
 deploy:
   kubectl: {}
   statusCheck: true

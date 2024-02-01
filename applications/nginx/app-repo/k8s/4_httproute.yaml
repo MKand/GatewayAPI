@@ -4,10 +4,14 @@ metadata:
   name: nginx-route
   namespace: nginx
 spec:
+  hostnames:
+  - nginx.endpoints.gateway-demos.cloud.goog
   parentRefs:
   - name: external-http
     namespace: gateway
   rules:
   - backendRefs:
-    - name: nginx-service
+    - group: net.gke.io
+      kind: ServiceImport
+      name: nginx-service
       port: 80
