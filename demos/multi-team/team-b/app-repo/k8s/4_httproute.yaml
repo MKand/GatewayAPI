@@ -5,13 +5,11 @@ metadata:
   namespace: app-b
 spec:
   hostnames:
-  - app-b.endpoints.gateway-demos.cloud.goog
+  - team-b.endpoints.gateway-demos.cloud.goog
   parentRefs:
   - name: external-http-single-cluster
     namespace: single-cluster-gateway
   rules:
   - backendRefs:
-    - group: net.gke.io
-      kind: ServiceImport
-      name: app-b-service
+    - name: app-b-service
       port: 80

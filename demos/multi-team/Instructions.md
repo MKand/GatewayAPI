@@ -1,8 +1,3 @@
-# Multi-team Global External Gateway demo
- Please note that this is **not** an official resource, so please refer to the documentation on GKE Autopilot on Google Cloud's official site.
-
-Please run the buildplatform.sh script before processing. Follow the instructions in the readme file.
-
 ## Connect to your cluster
 ```sh
 env PROJECT_ID=<project id>
@@ -78,3 +73,92 @@ kubens single-cluster-gateway
 kubectl describe gtw/external-http-single-cluster
 ```
 This command should give you the events that take place to program a gateway and attach a loadbalancer. The gateway when "PROGRAMMED" is ready to use. But, we will need httproutes.
+The ip address should also be what we deployed using terraform.
+If the output is too verbose, use the following command to see some of the information more concisely.
+```sh
+kubcetl get gtw
+```
+## Deploy Team A's Application
+
+Deploy the endpoint of the form *team-a.endpoints.<project-id>.cloud.goog* by running the following terraform command.
+
+```sh
+cd ../team-a/infra-repo/terraform
+terraform init -backend-config="bucket=${PROJECT_ID}"
+terraform plan -out=tfplan
+```
+Team A's application is a web-application that renders a simple webpage.
+The source code of the application is under *app/webpage* in this repo. The container image of this application can be built and pushed by running the command *./buildapp.sh* from the root of this repo. The image will be built and stored in Artifact registry under the name **europe-west4-docker.pkg.dev/<project-id>/demos/app:latest**
+
+It is now time to deploy the application.
+```sh
+cd ../../app-repo
+kubectl apply -f k8s
+```
+The k8s folder contains all the k8s manifests required to deploy the app.
+The application is parameterized with enviroment variables to give it a distinct render for team A.
+
+Let's examine the httproute resource.
+This is deployed in the *app-a* namespace that belongs to *Team A*.
+This route attaches itself to the *external-http-single-cluster* gateway deployed earlier. 
+This namespace (app-a) contains the required label *single-cluster-gateway: "true"* which allows the HttpRoute to attach itself to the gateway.
+The route also listens for the hostname *team-a.endpoints.<project-id>.cloud.goog* by matching the Host header of HTTP request. If a request has this header, then it is forwarded to **app-a-service**'s port *80*.
+
+```sh
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: app-a-route
+  namespace: app-a
+spec:
+  hostnames:
+  - team-a.endpoints.<project-id>.cloud.goog
+  parentRefs:
+  - name: external-http-single-cluster
+    namespace: single-cluster-gateway
+  rules:
+  - backendRefs:
+    - name: app-a-service
+      port: 80
+```
+
+You can examine the events that the gateway controller is performing to attach this route by running the following command and watching the events section. 
+```sh
+kubectl describe httproute/app-a-route
+```
+Note: This might need to be refreshed several times before the pertinent events show up. Eventually you should see events that state that binding to the gateway was successful.
+After a few minutes (this does take 5 mins approx) you can navigate to *http://team-a.endpoints.<project-id>.cloud.goog* and you should see TeamA's very blue webpage.
+
+You can navigate to the loadbalancers in Cloud Console. You should see a single backend, with a single NEG with one healthy endpoint. 
+![Healthy Endpoint for HttpRoute](../../img/healthy_backend.png)
+
+## Deploy Team B's Application
+
+Team B's application uses the same container image as Team A's application with a few different parameters.
+
+Deploy the endpoint of the form *team-b.endpoints.<project-id>.cloud.goog* by running the following terraform command.
+
+```sh
+cd ../../
+cd team-b/infra-repo/terraform
+terraform init -backend-config="bucket=${PROJECT_ID}"
+terraform plan -out=tfplan
+```
+
+It is now time to deploy the application.
+```sh
+cd ../../app-repo
+kubectl apply -f k8s
+```
+The k8s folder contains all the k8s manifests required to deploy the app.
+The application is parameterized with enviroment variables to give it a distinct render for team B.
+
+Let's examine the httproute resource.
+This is deployed in the *app-b* namespace that belongs to *Team  B*.
+This route attaches itself to the *external-http-single-cluster* gateway deployed earlier. 
+This namespace (app-a) contains the required label *single-cluster-gateway: "true"* which allows the HttpRoute to attach itself to the gateway.
+The route also listens for the hostname *team-b.endpoints.<project-id>.cloud.goog* by matching the Host header of HTTP request. If a request has this header, then it is forwarded to **app-b-service**'s port *80*. This way, the same gateway/loadbalancer can forward traffic to both *App A* and *App B* based on the hostname. While the *ingress* resource can also do this, this comes with the added bonus of having the resources being controlled by individual teams (platform, teamA, teamB) that they belong to without having the need to share them.
+
+Again, wait a few minutes after deployment, and check the backend status before trying to reach team B's app.
+
+**NOTE**:  It is important to note that it any time using CI/CD and automated testing might find it useful to add a delay in the execution on any automated tests in their pipeline.

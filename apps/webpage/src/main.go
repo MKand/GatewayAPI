@@ -19,7 +19,7 @@ func main() {
 		version = "Version 0"
 	}
 	if version = os.Getenv("TEAM"); team == "" {
-		version = "Team A"
+		team = "Team Unknown"
 	}
 	if colour = os.Getenv("COLOUR"); colour == "" {
 		colour = "red"
@@ -27,9 +27,10 @@ func main() {
 	appInfo := AppInfo{
 		Version: version,
 		Colour:  colour,
+		Team:    team,
 	}
 
-	log.Println(appInfo.Version, " ", appInfo.Colour)
+	log.Println(appInfo.Version, " ", appInfo.Colour, " ", appInfo.Team)
 
 	renderPage(appInfo)
 	servePages()
