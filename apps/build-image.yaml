@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-timeout: 7200s # 2hr
-tags:
-  - repos-pipelines
+timeout: 14400s # 2hr
 substitutions:
   _PROJECT_ID: ${PROJECT_ID}
+  _REGION: europe-west4
+tags:
+  - build-images
 steps:
-- name: "hashicorp/terraform:1.4.6"
-  id: 'repos'
-  dir: infra/terraform/repos
-  entrypoint: sh
-  args:
-    - "-xe"
-    - "-c"
-    - |
-        terraform init -backend-config="bucket=${_PROJECT_ID}"
-        terraform apply -var="project_id=${_PROJECT_ID}" --auto-approve
+- name: 'gcr.io/cloud-builders/docker'
+  dir: "apps/webpage"
+  args: [ 'build', 
+  '-t', '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/demos/app:latest', 
+  '.', '-f', './Dockerfile' ]
+images:
+- '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/demos/app'

@@ -23,7 +23,7 @@ tags:
 steps:
   - name: "gcr.io/cloud-builders/gcloud"
     id: "infra-create"
-    dir: applications/nginx
+    dir: demos/multi-cluster
     entrypoint: bash
     args:
       - -c
@@ -33,7 +33,7 @@ steps:
   
   - name: "gcr.io/cloud-builders/gcloud"
     id: "deploy-to-gke"
-    dir: applications/nginx
+    dir: demos/multi-cluster
     entrypoint: bash
     args:
       - -c

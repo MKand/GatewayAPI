@@ -1,0 +1,70 @@
+<html>
+<head>
+    <meta http-equiv="refresh" content="2" />
+    <style>
+    
+    .instance_name {
+        color: navy;
+        text-align: center;
+        font-weight: bold;
+    }
+    .idle {
+    	background-color: lightgray;
+    }
+    .active {
+    	background-color: lightgreen;
+    }
+    .unknown {
+    	background-color: black;
+    }
+    .container{
+            height: 180px;
+            width: 12%;
+            text-align: center;
+
+    }   
+    .legend{
+            height: 30px;
+            width: 5%;
+            text-align: center;
+    } 
+    .deleted {
+    	background-color: lightsalmon;
+    }
+
+    .box {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        gap: 2px;
+    }
+
+    .legendbox {
+        display: flex;
+        justify-content: flex-start;
+        gap: 20px 20px;
+    }
+    </style>
+</head>
+{{ if (eq .Colour "red")}}
+<body style= "background-color:#A50E0E">
+    <h1 style="text-align:center; color:whitesmoke;"> {{.Team}} </h1>
+    <h1 style="text-align:center; color:whitesmoke;"> {{.Version}} </h1>
+</body>
+{{else  if (eq .Colour "blue")}}
+<body style= "background-color:#174EA6">
+    <h1 style="text-align:center; color:whitesmoke;"> {{.Team}} </h1>
+    <h1 style="text-align:center; color:whitesmoke;"> {{.Version}} </h1>
+</body>
+{{ else if (eq .Colour "green")}}
+<body style= "background-color:#0D652D">
+    <h1 style="text-align:center; color:whitesmoke;"> {{.Team}} </h1>
+    <h1 style="text-align:center; color:whitesmoke;"> {{.Version}} </h1>
+</body>
+{{ else}}
+<body style= "background-color:#FBBC04">
+    <h1 style="text-align:center; color:whitesmoke;"> {{.Team}} </h1>
+    <h1 style="text-align:center; color:whitesmoke;"> {{.Version}} </h1>
+</body>
+{{end }}        
+ </html>

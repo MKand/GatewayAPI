@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-b
+  namespace: app-b
+spec:
+  selector:
+    matchLabels:
+      app: app-b
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: app-b
+    spec:
+      containers:
+      - name: app-b
+        image: europe-west4-docker.pkg.dev/gateway-demos/demos/app:latest
+        ports:
+        - containerPort: 8080
+        env:
+          - name: VERSION
+            value: "Version 1.2"
+          - name: COLOUR
+            value: "green"
+          - name: TEAM
+            value: "Team B"

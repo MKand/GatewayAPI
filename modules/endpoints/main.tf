@@ -1,5 +1,5 @@
 locals {
-    gclb_ip_address = jsondecode(data.google_storage_bucket_object_content.gclb_info.content)
+    gclb_ip_address = var.ip_address == "" ? jsondecode(data.google_storage_bucket_object_content.gclb_info.content) : var.ip_address
 }
 
 data "google_storage_bucket_object_content" "gclb_info" {

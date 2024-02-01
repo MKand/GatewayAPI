@@ -22,7 +22,7 @@ usage()
 
 
 # Setting default value
-APPLICATION=nginx
+APPLICATION=multicluster
 
 # Define bash args
 while [ "$1" != "" ]; do
@@ -51,7 +51,6 @@ echo -e "\e[95mAPPLICATION is set to ${APPLICATION}\e[0m"
 echo -e "\e[95mSHORT_SHA is set to ${SHORT_SHA}\e[0m"
 
 gcloud config set core/project ${PROJECT_ID}
-[[ ${APPLICATION} == "nginx" ]] && echo -e "\e[95mStarting to deploy application ${APPLICATION}...\e[0m" && gcloud builds submit --config=applications/nginx/ci.yaml --substitutions=_PROJECT_ID=${PROJECT_ID},_SHORT_SHA=${SHORT_SHA},_APP_NAME=nginx  --async
-[[ ${APPLICATION} == "whereami" ]] && echo -e "\e[95mStarting to deploy application ${APPLICATION}...\e[0m" && gcloud builds submit --config=applications/whereami/ci.yaml --substitutions=_PROJECT_ID=${PROJECT_ID},_SHORT_SHA=${SHORT_SHA},_APP_NAME=whereami  --async
+echo -e "\e[95mStarting to deploy application ${APPLICATION}...\e[0m" && gcloud builds submit --config=demos/multi-cluster/ci.yaml --substitutions=_PROJECT_ID=${PROJECT_ID},_SHORT_SHA=${SHORT_SHA},_APP_NAME=nginx  --async
 
 echo -e "\e[95mYou can view the Cloudbuild status through https://console.cloud.google.com/cloud-build\e[0m"
