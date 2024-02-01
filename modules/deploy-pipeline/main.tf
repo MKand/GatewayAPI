@@ -63,7 +63,7 @@ resource "google_clouddeploy_delivery_pipeline" "primary" {
   serial_pipeline {
 
     stages {
-        profiles  = ["prod"]
+        profiles  = []
         target_id = google_clouddeploy_target.multi_target_apps.target_id
     }
   }
