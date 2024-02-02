@@ -21,6 +21,8 @@ module "project-services" {
     "sqladmin.googleapis.com",
     "containersecurity.googleapis.com",
     "binaryauthorization.googleapis.com",
-    "anthosconfigmanagement.googleapis.com"
+    "anthosconfigmanagement.googleapis.com",
+    "certificatemanager.googleapis.com"
+
   ]
 }

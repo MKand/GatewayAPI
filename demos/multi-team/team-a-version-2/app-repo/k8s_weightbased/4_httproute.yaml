@@ -5,7 +5,7 @@ metadata:
   namespace: app-a
 spec:
   hostnames:
-  - team-a.endpoints.gateway-demos.cloud.goog
+  - app-a.endpoints.gateway-demos.cloud.goog
   parentRefs:
   - name: external-http-single-cluster
     namespace: single-cluster-gateway

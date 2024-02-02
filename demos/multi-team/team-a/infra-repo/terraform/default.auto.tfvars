@@ -1,2 +1,2 @@
 project_id = "gateway-demos"
-service_name = "team-a"
+service_name = "app-a"
