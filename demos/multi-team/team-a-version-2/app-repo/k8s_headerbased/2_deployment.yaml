@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-a-version-2
+  namespace: app-a
+spec:
+  selector:
+    matchLabels:
+      app: app-a
+      version: "2"
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: app-a
+        version: "2"
+    spec:
+      containers:
+      - name: app-a
+        image: europe-west4-docker.pkg.dev/gateway-demos/demos/app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+          - name: VERSION
+            value: "Version 2"
+          - name: COLOUR
+            value: "red"
+          - name: TEAM
+            value: "Team A"
