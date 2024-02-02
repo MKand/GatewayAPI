@@ -250,7 +250,6 @@ kubectl apply -f k8s_weightbased
  ```sh
  curl http://team-a.endpoints.<project id>.cloud.goog/
  ```
-## Weight Based Traffic Splitting
 After AppA version has shown to be success, the team can choose to switch the weights to 0:100 (or 0:1). That way, they can still keep version 1 alive for a while longer in case they need to revert should any issues with version 2 occur.
 
 Let us examine the updated HTTPRoute resource that replaces the first version of the resource we deployed.
@@ -283,5 +282,34 @@ kubectl apply -f k8s_switch_to_v2
 ```
  After waiting a while for the new Route to take effect try curling the webpage. You should see only version 2 of the app appear, which version 1 is still running in the background.
 
-
-
+## Clean up 
+Let's remove all resources from the cluster.
+```sh 
+kubens app-a
+kubectl delete all 
+kubectl delete ns app-a
+kubens app-b
+kubectl delete all
+kubectl delete ns app-b
+kubectl single-cluster-gateway
+kubectl delete all
+kubectl delete ns single-cluster-gateway
+```
+Lets delete the endpoints created. Assuming you are now in the *demos/multi-team/team-a-version/app-repo folder*
+```sh
+cd ../../team-a/infra-repo/terraform
+terraform init -backend-config="bucket=${PROJECT_ID}"
+terraform delete --auto-approve
+```
+The endpoint for teamA should be deleted. Let's do the same for teamB's resources.
+```sh
+cd ../../../team-b/infra-repo/terraform
+terraform init -backend-config="bucket=${PROJECT_ID}"
+terraform delete --auto-approve
+```
+Finally, clean up the resources for the gateway.
+```sh
+cd ../../../platform/terraform
+terraform init -backend-config="bucket=${PROJECT_ID}"
+terraform delete --auto-approve
+```
