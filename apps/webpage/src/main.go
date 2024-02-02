@@ -18,7 +18,7 @@ func main() {
 	if version = os.Getenv("VERSION"); version == "" {
 		version = "Version 0"
 	}
-	if version = os.Getenv("TEAM"); team == "" {
+	if team = os.Getenv("TEAM"); team == "" {
 		team = "Team Unknown"
 	}
 	if colour = os.Getenv("COLOUR"); colour == "" {

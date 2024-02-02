@@ -16,6 +16,7 @@ spec:
       containers:
       - name: app-b
         image: europe-west4-docker.pkg.dev/gateway-demos/demos/app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:

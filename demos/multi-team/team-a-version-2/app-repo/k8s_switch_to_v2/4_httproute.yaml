@@ -13,3 +13,7 @@ spec:
   - backendRefs:
     - name: app-a-service-version-1
       port: 80
+      weight: 0
+    - name: app-a-service-version-2
+      port: 80
+      weight: 1

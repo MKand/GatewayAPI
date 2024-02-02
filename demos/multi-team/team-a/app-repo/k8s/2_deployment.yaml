@@ -7,20 +7,23 @@ spec:
   selector:
     matchLabels:
       app: app-a
+      version: "1"
   replicas: 1 
   template:
     metadata:
       labels:
         app: app-a
+        version: "1"
     spec:
       containers:
       - name: app-a
         image: europe-west4-docker.pkg.dev/gateway-demos/demos/app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
           - name: VERSION
-            value: "Version 0"
+            value: "Version 1"
           - name: COLOUR
             value: "blue"
           - name: TEAM

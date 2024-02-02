@@ -1,3 +1,8 @@
+# Multi-team Global External Gateway demo
+ Please note that this is **not** an official resource, so please refer to the documentation on GKE Autopilot on Google Cloud's official site.
+
+Please run the buildplatform.sh script before processing. Follow the instructions in the readme file.
+
 ## Connect to your cluster
 ```sh
 env PROJECT_ID=<project id>
@@ -76,7 +81,7 @@ This command should give you the events that take place to program a gateway and
 The ip address should also be what we deployed using terraform.
 If the output is too verbose, use the following command to see some of the information more concisely.
 ```sh
-kubcetl get gtw
+kubectl get gtw
 ```
 ## Deploy Team A's Application
 
@@ -87,12 +92,6 @@ cd ../team-a/infra-repo/terraform
 terraform init -backend-config="bucket=${PROJECT_ID}"
 terraform plan -out=tfplan
 ```
-Verify the infrastructure is according to plan. If so, proceed to the next step.
-
-```sh
-terraform apply tfplan
-```
-
 Team A's application is a web-application that renders a simple webpage.
 The source code of the application is under *app/webpage* in this repo. The container image of this application can be built and pushed by running the command *./buildapp.sh* from the root of this repo. The image will be built and stored in Artifact registry under the name **europe-west4-docker.pkg.dev/<project-id>/demos/app:latest**
 
@@ -150,11 +149,7 @@ cd team-b/infra-repo/terraform
 terraform init -backend-config="bucket=${PROJECT_ID}"
 terraform plan -out=tfplan
 ```
-Verify the infrastructure is according to plan. If so, proceed to the next step.
 
-```sh
-terraform apply tfplan
-```
 It is now time to deploy the application.
 ```sh
 cd ../../app-repo
@@ -171,4 +166,122 @@ The route also listens for the hostname *team-b.endpoints.<project-id>.cloud.goo
 
 Again, wait a few minutes after deployment, and check the backend status before trying to reach team B's app.
 
-**NOTE**:  It is important to note that it any time using CI/CD and automated testing might find it useful to add a delay in the execution on any automated tests in their pipeline.
+*NOTE* It is important to note that it any time using CI/CD and automated testing might find it useful to add a delay in the execution on any automated tests in their pipeline.
+
+## Header based routing
+We're going to do some header based routing.
+Let's say AppA has a new version that the team wants to allow beta-testers to use. So, users with the header "env=beta" are allowed to access the new version.  
+
+```sh
+cd ../../team-a-version-2/app-repo
+```
+Let us examine the updated HTTPRoute resource.
+We set the resource to route traffic to version 2 of the application when the header *env=canary* is added. 
+
+```sh
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: app-a-route
+  namespace: app-a
+spec:
+  hostnames:
+  - team-a.endpoints.gateway-demos.cloud.goog
+  parentRefs:
+  - name: external-http-single-cluster
+    namespace: single-cluster-gateway
+  rules:
+  - matches:
+    - headers:
+      - type: Exact
+        name: env
+        value: canary
+    backendRefs:
+    - name: app-a-service-version-2
+      port: 80
+  - backendRefs:
+    - name: app-a-service-version-1
+      port: 80
+```
+Now let's apply the new version of the HTTPRoute.
+
+```sh
+kubectl apply -f k8s_headerbased
+```
+ After waiting a while for the new Route to take effect try curling the webpage with the new header
+ 
+ ```sh
+ curl --header "env: canary" http://team-a.endpoints.<project id>.cloud.goog/
+ ```
+ 
+## Weight Based Traffic Splitting
+We're going to do some traffic splitting.
+AppA is past the beta testing phase and will proceed to AB testing, where version 1 is served 70% of the time and version 2 is displayed 30% of the time. This can be performed by deploying both versions and configuring the weight of each service accordingly.
+
+Let us examine the updated HTTPRoute resource that replaces the first version of the resource we deployed.
+We set the resource to route traffic to both resources at the ratio of 70:30
+```sh
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: app-a-route
+  namespace: app-a
+spec:
+  hostnames:
+  - team-a.endpoints.gateway-demos.cloud.goog
+  parentRefs:
+  - name: external-http-single-cluster
+    namespace: single-cluster-gateway
+  rules:
+  - backendRefs:
+    - name: app-a-service-version-1
+      port: 80
+      weight: 70
+    - name: app-a-service-version-2
+      port: 80
+      weight: 30
+```
+Now let's apply the new version of the HTTPRoute.
+
+```sh
+kubectl apply -f k8s_weightbased
+```
+ After waiting a while for the new Route to take effect try curling the webpage. You should see both versions of the app appear (without the use of a header), with version 1 appearing slightly more frequently than version 2.
+ ```sh
+ curl http://team-a.endpoints.<project id>.cloud.goog/
+ ```
+## Weight Based Traffic Splitting
+After AppA version has shown to be success, the team can choose to switch the weights to 0:100 (or 0:1). That way, they can still keep version 1 alive for a while longer in case they need to revert should any issues with version 2 occur.
+
+Let us examine the updated HTTPRoute resource that replaces the first version of the resource we deployed.
+We set the resource to route traffic to both resources at the ratio of 70:30
+```sh
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: app-a-route
+  namespace: app-a
+spec:
+  hostnames:
+  - team-a.endpoints.gateway-demos.cloud.goog
+  parentRefs:
+  - name: external-http-single-cluster
+    namespace: single-cluster-gateway
+  rules:
+  - backendRefs:
+    - name: app-a-service-version-1
+      port: 80
+      weight: 0
+    - name: app-a-service-version-2
+      port: 80
+      weight: 1
+```
+Now let's apply the new version of the HTTPRoute.
+
+```sh
+kubectl apply -f k8s_switch_to_v2
+```
+ After waiting a while for the new Route to take effect try curling the webpage. You should see only version 2 of the app appear, which version 1 is still running in the background.
+
+
+
