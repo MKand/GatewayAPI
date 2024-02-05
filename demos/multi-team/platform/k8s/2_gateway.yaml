@@ -11,7 +11,17 @@ spec:
   - name: https
     protocol: HTTPS
     port: 443
-    hostname: "*.endpoints.gateway-demos.cloud.goog"
+    allowedRoutes:
+      kinds:
+      - kind: HTTPRoute
+      namespaces:
+        from: Selector
+        selector:
+          matchLabels:
+            single-cluster-gateway: "true"
+  - name: http
+    protocol: HTTP
+    port: 80
     allowedRoutes:
       kinds:
       - kind: HTTPRoute

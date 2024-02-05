@@ -29,7 +29,6 @@ terraform init -backend-config="bucket=${PROJECT_ID}"
 terraform plan -out=tfplan
 ```
 Verify the infrastructure is according to plan. If so, proceed to the next step.
-
 ```sh
 terraform apply tfplan
 ```
@@ -58,11 +57,11 @@ Let us create an entry for each of the certificates created in the earlier map.
 gcloud certificate-manager maps entries create app-a-cert-map-entry \
     --map="apps-cert-map" \
     --certificates="app-a-gtw-cert" \
-    --hostname="team-a.endpoints.${PROJECT_ID}.cloud.goog"
+    --hostname="app-a.endpoints.${PROJECT_ID}.cloud.goog"
 gcloud certificate-manager maps entries create app-b-cert-map-entry \
     --map="apps-cert-map" \
     --certificates="app-b-gtw-cert" \
-    --hostname="team-b.endpoints.${PROJECT_ID}.cloud.goog"
+    --hostname="app-b.endpoints.${PROJECT_ID}.cloud.goog"
 ```
 Let us create the gateway resource. This example uses the (Shared Gateway per cluster pattern)[https://cloud.google.com/kubernetes-engine/docs/concepts/gateway-api#shared_gateway_per_cluster]. So the platform team owns the Gateway, DNS domain, and certificates while the teams own their own namespaces, and the HTTPRoutes.
 
@@ -144,6 +143,10 @@ cd $WORKDIR/demos/multi-team/team-a/infra-repo/terraform
 terraform init -backend-config="bucket=${PROJECT_ID}"
 terraform plan -out=tfplan
 ```
+Verify the infrastructure is according to plan. If so, proceed to the next step.
+```sh
+terraform apply tfplan
+```
 Team A's application is a web-application that renders a simple webpage.
 The source code of the application is under *app/webpage* in this repo. The container image of this application can be built and pushed by running the command *./buildapp.sh* from the root of this repo. The image will be built and stored in Artifact registry under the name **europe-west4-docker.pkg.dev/<project-id>/demos/app:latest**
 
@@ -181,7 +184,7 @@ spec:
 
 You can examine the events that the gateway controller is performing to attach this route by running the following command and watching the events section. 
 ```sh
-kubectl describe httproute/app-a-route
+kubectl describe httproute/app-a-route -n app-a
 ```
 Note: This might need to be refreshed several times before the pertinent events show up. Eventually you should see events that state that binding to the gateway was successful.
 After a few minutes (this does take 5 mins approx) you can navigate to *https://app-a.endpoints.<project-id>.cloud.goog* and you should see TeamA's very blue webpage.
@@ -200,19 +203,25 @@ cd $WORKDIR/demos/multi-team/team-b/infra-repo/terraform
 terraform init -backend-config="bucket=${PROJECT_ID}"
 terraform plan -out=tfplan
 ```
-
+Verify the infrastructure is according to plan. If so, proceed to the next step.
+```sh
+terraform apply tfplan
+```
 It is now time to deploy the application.
+
 ```sh
 cd $WORKDIR/demos/multi-team/team-b/app-repo
 kubectl apply -f k8s
 ```
 The k8s folder contains all the k8s manifests required to deploy the app.
 The application is parameterized with enviroment variables to give it a distinct render for team B.
-
-Let's examine the httproute resource.
+You can examine the events that the gateway controller is performing to attach this route by running the following command and watching the events section. 
+```sh
+kubectl describe httproute/app-b-route -n app-b
+```
 This is deployed in the *app-b* namespace that belongs to *Team  B*.
 This route attaches itself to the *external-http-single-cluster* gateway deployed earlier. 
-This namespace (app-a) contains the required label *single-cluster-gateway: "true"* which allows the HttpRoute to attach itself to the gateway.
+This namespace (app-b) contains the required label *single-cluster-gateway: "true"* which allows the HttpRoute to attach itself to the gateway.
 The route also listens for the hostname *app-b.endpoints.<project-id>.cloud.goog* by matching the Host header of HTTP request. If a request has this header, then it is forwarded to **app-b-service**'s port *80*. This way, the same gateway/loadbalancer can forward traffic to both *App A* and *App B* based on the hostname. While the *ingress* resource can also do this, this comes with the added bonus of having the resources being controlled by individual teams (platform, teamA, teamB) that they belong to without having the need to share them.
 
 Again, wait a few minutes after deployment, and check the backend status before trying to reach team B's app.
