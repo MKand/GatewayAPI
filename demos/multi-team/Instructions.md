@@ -327,6 +327,59 @@ kubectl apply -f k8s_switch_to_v2
 ```
  After waiting a while for the new Route to take effect try curling the webpage. You should see only version 2 of the app appear, which version 1 is still running in the background.
 
+## HTTPs redirect
+Now, the platform team has decided to stop letting applications be served on HTTP. So, we implement a redirect to HTTPS for all HTTP calls. 
+We first apply a HTTPRoute in the platform team's namespace (single-custer-gateway) that attaches itself to the HTTP listener and redirects calls to HTTPS.
+```sh
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-filter-redirect
+  namespace: single-cluster-gateway
+spec:
+  parentRefs:
+  - name: external-http-single-cluster
+    sectionName: http
+  rules:
+  - filters:
+    - type: RequestRedirect
+      requestRedirect:
+        scheme: https
+        statusCode: 301
+```
+Let's apply this configuration.
+```sh
+cd $WORKDIR/demos/multi-team/https-redirect
+kubectl apply -f 1_redirect_route.yaml
+```
+Let's update the HTTPRoute's of app-A and app-B so that it that attaches only to the HTTPS listener that forwards HTTPS traffic to application backends. 
+Here is the updated config of app-A.
+```sh
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: app-a-route
+  namespace: app-a
+spec:
+  hostnames:
+  - app-a.endpoints.<project id>.cloud.goog
+  parentRefs:
+  - name: external-http-single-cluster
+    namespace: single-cluster-gateway
+    sectionName: https
+  rules:
+  - backendRefs:
+    - name: app-a-service-version-2
+      port: 80
+```
+Let's apply the updated configuration for both app-a and app-b.
+```sh
+cd $WORKDIR/demos/multi-team/https-redirect
+kubectl apply -f 2_httproute-app-a.yaml
+kubectl apply -f 3_httproute-app-b.yaml
+```
+
+
 ## Clean up 
 Let's remove all resources from the cluster.
 ```sh 
