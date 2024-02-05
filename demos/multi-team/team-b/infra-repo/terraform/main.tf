@@ -3,6 +3,24 @@ data "google_compute_global_address" "gtw-address" {
   project      = var.project_id 
 }
 
+resource "google_certificate_manager_certificate" "default" {
+  name        = "app-b-gtw-cert"
+  project = var.project_id
+  managed {
+    domains = [
+        "app-b.endpoints.${var.project_id}.cloud.goog"
+      ]
+  }
+}
+
+resource "google_certificate_manager_certificate_map_entry" "default" {
+  name        = "app-b-gtw-cert"
+  map         = "apps-cert-map" 
+  certificates = [google_certificate_manager_certificate.default.id]
+  hostname = "app-b.endpoints.${var.project_id}.cloud.goog"
+  project = var.project_id
+}
+
 module "endpoint" {
     source = "git::https://github.com/MKand/GatewayAPI.git//modules/endpoints"
     project_id = var.project_id
