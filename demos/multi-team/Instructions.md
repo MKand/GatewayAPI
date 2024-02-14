@@ -47,7 +47,7 @@ Routes (we'll see later) that are deployed into namespaces that contain the labe
 This way, the *single-cluster-gateway* namespace remains under the control of the platform team, while application teams can deploy httproutes in their own namespaces. The platform team can also ensure that only certain namespaces can contain the label.
 There is a single listener, which listens to incoming requests with the configured hostname, protocol and port.
 
-In this example, we use the reference the certificate we create through an annotation(!) that references certmaps. The certficates for differnet apps (unless you choose to have a single wildcard certificate can be added to the *apps-cert-map*). The certmap referenced below is created in the *demos/multi-team/platform/terraform module*. The certificates themselves will be created by the terraform modules for application teams in later steps and added to the certmap.
+In this example, we use the reference the certificates we create through an annotation (yikes!) that references the certmap that holds the certificate. We use seperate certficates for different apps because the loadbalancer-type authorization used by the certificate manager cannot issue wildcard certificates. We use this method here as *google cloud endpoints* that issues our FQDN doesn't permit us to update DNS TXT records that are necessary for enabling DNS-authorization which does support wildcard certificates. The certmap referenced below (*apps-cert-map*) is created by the *demos/multi-team/platform/terraform module* used earlier in the module. The certificates themselves will be created by the terraform modules for the individual applications in later steps and are added to this certmap.
 
 ```sh
 kind: Gateway
