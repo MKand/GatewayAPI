@@ -47,7 +47,7 @@ Routes (we'll see later) that are deployed into namespaces that contain the labe
 This way, the *single-cluster-gateway* namespace remains under the control of the platform team, while application teams can deploy httproutes in their own namespaces. The platform team can also ensure that only certain namespaces can contain the label.
 There is a single listener, which listens to incoming requests with the configured hostname, protocol and port.
 
-In this example, we use the reference the certificate we create through an annotation(!) that references certmaps. The certficates for differnet apps (unless you choose to have a single wildcard certificate can be added to the *apps-cert-map*)
+In this example, we use the reference the certificate we create through an annotation(!) that references certmaps. The certficates for differnet apps (unless you choose to have a single wildcard certificate can be added to the *apps-cert-map*). The certmap referenced below is created in the *demos/multi-team/platform/terraform module*. The certificates themselves will be created by the terraform modules for application teams in later steps and added to the certmap.
 
 ```sh
 kind: Gateway
@@ -76,7 +76,7 @@ spec:
   - type: NamedAddress
     value: single-cluster-gateway-address
 ```
-However, if you choose to either use a self-managed certificate or a Google Managed certificate, follow the instructions in this [page](https://cloud.google.com/kubernetes-engine/docs/how-to/secure-gateway). 
+NOTE: if you choose to either use a self-managed certificate or a Google Managed certificate, follow the instructions in this [page](https://cloud.google.com/kubernetes-engine/docs/how-to/secure-gateway). 
 The configuration of the Gateway Listener will change slightly as you will need to include the following for a kubernetes secret that stores a self-managed certificate.
 ```sh
     tls:
@@ -114,14 +114,15 @@ kubectl get gtw -n single-cluster-gateway
 ```
 ## Deploy Team A's Application
 
-Deploy the endpoint of the form *team-a.endpoints.<project-id>.cloud.goog* by running the following terraform command.
+Deploy the endpoint of the form *app-a.endpoints.<project-id>.cloud.goog* by running the following terraform command.
 
 ```sh
 cd $WORKDIR/demos/multi-team/team-a/infra-repo/terraform
 terraform init -backend-config="bucket=${PROJECT_ID}"
 terraform plan -out=tfplan
 ```
-Verify the infrastructure is according to plan. If so, proceed to the next step.
+Verify the infrastructure is according to plan. If so, proceed to the next step. The terraform module will also create the certificate for *AppA*, called *app-a-gtw-cert* and add it to the certmap referenced by the gateway resource.
+
 ```sh
 terraform apply tfplan
 ```
@@ -178,7 +179,7 @@ gcloud certificate-manager certificates describe app-a-gtw-cert
 
 Team B's application uses the same container image as Team A's application with a few different parameters.
 
-Deploy the endpoint of the form *app-b.endpoints.<project-id>.cloud.goog* by running the following terraform command.
+Deploy the endpoint of the form *app-b.endpoints.<project-id>.cloud.goog* by running the following terraform command.  The terraform module will also create the certificate for *AppB*, called *app-b-gtw-cert* and add it to the certmap referenced by the gateway resource.
 
 ```sh
 cd $WORKDIR/demos/multi-team/team-b/infra-repo/terraform
@@ -377,6 +378,19 @@ Let's apply the updated configuration for both app-a and app-b.
 cd $WORKDIR/demos/multi-team/https-redirect
 kubectl apply -f 2_httproute-app-a.yaml
 kubectl apply -f 3_httproute-app-b.yaml
+```
+## Enable CloudArmor
+We're going to use cloud armor to secure the loadbalancer.
+This is created by creating a CloudArmor Security Policy and Rule and attaching it to the Backend's services.
+```sh
+gcloud compute security-policies create gateway-policy \
+    --description "Block XSS attacks"
+    
+gcloud compute security-policies rules create 1000 \
+    --security-policy gateway-policy \
+    --expression "evaluatePreconfiguredExpr('xss-stable')" \
+    --action "deny-403" \
+    --description "XSS attack filtering"
 ```
 
 
