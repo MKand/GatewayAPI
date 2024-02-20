@@ -1,11 +1,11 @@
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: nginx-route
-  namespace: nginx
+  name: whereami-route
+  namespace: whereami
 spec:
   hostnames:
-  - nginx.endpoints.gateway-demos.cloud.goog
+  - whereami.endpoints.gateway-demos.cloud.goog
   parentRefs:
   - name: external-http
     namespace: gateway
@@ -13,5 +13,5 @@ spec:
   - backendRefs:
     - group: net.gke.io
       kind: ServiceImport
-      name: nginx-service
+      name: whereami-service
       port: 80

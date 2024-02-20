@@ -16,7 +16,6 @@ substitutions:
   _PROJECT_ID: ${PROJECT_ID}
   _DEPLOY_INFRA: "true"
   _DEPLOY_APP: "true"
-  _SERVICE: "nginx"
 
 tags:
   - deploy-infra-and-app
@@ -29,8 +28,7 @@ steps:
       - -c
       - |
         [[ "${_DEPLOY_INFRA}" == "false" ]] && exit 0
-        exec gcloud builds submit --config ./infra-repo/create-platform-infra.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID},_APP_NAME=${_APP_NAME},_SERVICE=${_SERVICE}
-  
+        exec gcloud builds submit --config ./infra-repo/create-platform-infra.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID},_APP_NAME=${_APP_NAME}
   - name: "gcr.io/cloud-builders/gcloud"
     id: "deploy-to-gke"
     dir: demos/multi-cluster
@@ -39,5 +37,5 @@ steps:
       - -c
       - |
         [[ "${_DEPLOY_APP}" == "false" ]] && exit 0
-        exec gcloud builds submit --config ./app-repo/deploy-app.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID},_SHORT_SHA=${_SHORT_SHA},_APP_NAME=${_APP_NAME},_SERVICE=${_SERVICE}
+        exec gcloud builds submit --config ./app-repo/deploy-app.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID},_SHORT_SHA=${_SHORT_SHA},_APP_NAME=${_APP_NAME}
   

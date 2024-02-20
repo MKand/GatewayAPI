@@ -32,10 +32,9 @@ steps:
         echo -e "_SHORT_SHA is ${_SHORT_SHA}"
         echo -e "_PIPELINE_LOCATION is ${_REGION}"
         echo -e "_APP_NAME is ${_APP_NAME}"
-        echo -e "_SERVICE is ${_SERVICE}"
 
         gcloud deploy releases create rel-${_SHORT_SHA} \
-        --delivery-pipeline ${_SERVICE}-pipeline \
+        --delivery-pipeline ${_APP_NAME}-pipeline \
         --region ${_REGION} \
         --skaffold-file=./skaffold-app.yaml
   # Create release in Google Cloud Deploy for App Clusters
@@ -50,9 +49,8 @@ steps:
         echo -e "_SHORT_SHA is ${_SHORT_SHA}"
         echo -e "_PIPELINE_LOCATION is ${_REGION}"
         echo -e "_APP_NAME is ${_APP_NAME}"
-        echo -e "_SERVICE is ${_SERVICE}"
 
         gcloud deploy releases create rel-${_SHORT_SHA} \
-        --delivery-pipeline config-${_SERVICE}-pipeline \
+        --delivery-pipeline config-${_APP_NAME}-pipeline \
         --region ${_REGION} \
         --skaffold-file=./skaffold-config.yaml

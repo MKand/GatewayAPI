@@ -1,11 +1,11 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: nginx
+  name: whereami
 manifests:
  rawYaml:
- - ./k8s/1_namespace.yaml
- - ./k8s/4_httproute.yaml
+ - ./k8s/namespace.yaml
+ - ./k8s/httproute.yaml
 deploy:
   kubectl: {}
   statusCheck: true

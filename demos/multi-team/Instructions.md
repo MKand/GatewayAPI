@@ -5,7 +5,7 @@
 
 ## Connect to your cluster
 ```sh
-env PROJECT_ID=<project id>
+export PROJECT_ID=<project id>
 export WORKDIR=`pwd`
 ```
 Update the **vars.sh** file to suit your environment.

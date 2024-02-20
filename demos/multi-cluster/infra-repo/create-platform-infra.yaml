@@ -32,6 +32,7 @@ steps:
         [[ "${_DEPLOY}" == "false" ]] && exit 0
         terraform init -backend-config="bucket=${_PROJECT_ID}"
         terraform apply -var="project_id=${_PROJECT_ID}" \
-        -var="service_name=${_SERVICE}" -var="app_name=${_APP_NAME}" \
+        -var="service_name=${_APP_NAME}" \
+        -var="app_name=${_APP_NAME}" \
         -var="pipeline_location=${_PIPELINE_LOCATION}" \
         --auto-approve
