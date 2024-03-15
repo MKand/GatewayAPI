@@ -13,8 +13,7 @@ usage()
 {
    echo ""
    echo "Usage: $0"
-   echo -e "\t--app | -a Must be one of 'nginx' or 'whereami'. Default is 'nginx'."
-   echo -e "\tExample usage:"op
+   echo -e "\tExample usage: ./deployapp.sh"
    exit 1 # Exit script after printing help
 }
 
