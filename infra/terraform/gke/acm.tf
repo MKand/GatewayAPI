@@ -1,15 +1,3 @@
-# module "workload-identity" {
-#   source              = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
-#   name                = "config-sync-sa"
-#   project_id          = var.project_id
-#   annotate_k8s_sa     = true
-#   cluster_name        = module.gke[0].name
-#   location            = module.gke[0].location
-#   namespace           = "config-management-system"
-#   k8s_sa_name         = "root-reconciler" # This will be the name of the sa that will be created for a root syn cepo. 
-#   roles               = ["roles/source.reader"]
-# }
-
 module "service_account" {
   source        = "terraform-google-modules/service-accounts/google"
   version       = "~> 3.0"

@@ -14,7 +14,7 @@ usage()
    echo ""
    echo "Usage: $0"
    echo -e "\tExample usage:"
-   echo -e "\t./build.sh"
+   echo -e "\t./buildplatform.sh"
    exit 1 # Exit script after printing help
 }
 

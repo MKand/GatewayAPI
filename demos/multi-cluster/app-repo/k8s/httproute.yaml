@@ -5,7 +5,7 @@ metadata:
   namespace: whereami
 spec:
   hostnames:
-  - whereami.endpoints.gateway-demos.cloud.goog
+  - whereami.endpoints.<project-id>.cloud.goog
   parentRefs:
   - name: external-http
     namespace: gateway
