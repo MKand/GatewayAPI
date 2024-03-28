@@ -58,7 +58,7 @@ The multicluster deploys the same *whereami* app across both the clusters uses a
 
 The multicluster gateway uses [Multicluster services](https://cloud.google.com/kubernetes-engine/docs/concepts/multi-cluster-services) to create service imports in the cluster hosting the gateway configuration. 
 
-We need to configure the httproute to listen to the right hostname which will be *whereami.endpoints.<project-id>.cloud.goog*. Naviagate to *multi-cluster/app-repo/k8s/httproute.yaml and update the hostnames section with the endpoint url created in your project. You'll just need to replace <project-id> with the right value for that.
+We need to configure the httproute to listen to the right hostname which will be *whereami.endpoints.$PROJECT_ID.cloud.goog*. Naviagate to *multi-cluster/app-repo/k8s/httproute.yaml and update the hostnames section with the endpoint url created in your project. You'll just need to replace <project-id> with the right value for that.
 
 Run ./deplpy-multicluster-app.sh
 
